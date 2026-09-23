@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediaFlow - YouTube İndirici</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-red: #ef4444;
+            --accent-green: #22c55e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            width: 420px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .logo-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0 0 5px 0;
+            color: var(--text-main);
+        }
+
+        p.subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #0f172a;
+            color: var(--text-main);
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.1s, opacity 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-video {
+            background-color: var(--accent-red);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-audio {
+            background-color: var(--accent-green);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 13px;
+            min-height: 32px;
+        }
+
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border-left-color: #3b82f6;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19.615 3.184c-3.604-.246-11.631-.246-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.245 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                </svg>
+            </div>
+        </div>
+        
+        <h1>MediaFlow</h1>
+        <p class="subtitle">YouTube Video & Ses İndirici</p>
+
+        <div class="input-group">
+            <input type="text" id="urlInput" placeholder="YouTube bağlantısını buraya yapıştırın...">
+        </div>
+
+        <div class="btn-container">
+            <button class="btn-video" onclick="startDownload('video')">Video İndir</button>
+            <button class="btn-audio" onclick="startDownload('audio')">MP3 İndir</button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function startDownload(type) {
+            const url = document.getElementById('urlInput').value.trim();
+            const statusDiv = document.getElementById('status');
+
+            if (!url) {
+                statusDiv.innerHTML = '<span style="color: #f87171;">Lütfen geçerli bir bağlantı girin!</span>';
+                return;
+            }
+
+            statusDiv.innerHTML = '<div class="spinner"></div> İndiriliyor: %0 (0 MB / 0 MB)';
+
+            const progressInterval = setInterval(() => {
+                fetch('/progress')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.percent) {
+                        statusDiv.innerHTML = `<div class="spinner"></div> İndiriliyor: %${data.percent} <br><small style="color: #94a3b8;">(${data.downloaded} / ${data.total})</small>`;
+                    }
+                }).catch(() => {});
+            }, 400);
+
+            fetch('/download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: url, type: type })
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                if (data.success) {
+                    statusDiv.innerHTML = `<span style="color: #4ade80; font-weight: 500;">Başarıyla indirildi!<br><small style="color: #94a3b8;">(${data.filename})</small></span>`;
+                } else {
+                    statusDiv.innerHTML = `<span style="color: #f87171;">Hata: ${data.error}</span>`;
+                }
+            })
+            .catch(error => {
+                clearInterval(progressInterval);
+                statusDiv.innerHTML = `<span style="color: #f87171;">Bir hata oluştu: ${error}</span>`;
+            });
+        }
+    </script>
+
+</body>
+</html>
