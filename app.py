@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, send_file
-import yt_dlp
 import os
+from flask import Flask, render_template, request, jsonify, send_file
+import yt_dlp
 
 app = Flask(__name__)
 
@@ -14,12 +14,13 @@ def index():
     return render_template('index.html')
 
 @app.route('/download', methods=['POST'])
-def download():
-    url = request.form.get('url')
-    download_type = request.form.get('type') # 'video' veya 'audio'
+def download_video():
+    data = request.get_json()
+    if not data or 'url' not in data:
+        return jsonify({"error": "Geçerli bir link girmediniz!"}), 400
 
-    if not url:
-        return "Geçerli bir link girmediniz!", 400
+    url = data['url']
+    download_type = data.get('type', 'video')
 
     ydl_opts = {
         'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s.%(ext)s'),
@@ -46,11 +47,16 @@ def download():
             
             if download_type == 'audio':
                 filename = os.path.splitext(filename)[0] + '.mp3'
-                
-        return send_file(filename, as_attachment=True)
+
+        return jsonify({"success": True, "file": os.path.basename(filename)})
     
     except Exception as e:
-        return f"Bir hata oluştu: {str(e)}", 500
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/get-file/<path:filename>')
+def get_file(filename):
+    return send_file(os.path.join(DOWNLOAD_FOLDER, filename), as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
