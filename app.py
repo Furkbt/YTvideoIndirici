@@ -24,7 +24,7 @@ def download_video():
 
     ydl_opts = {
         'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s.%(ext)s'),
-        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        'extractor_args': {'youtube': {'player_client': ['mweb', 'ios']}},
     }
 
     if download_type == 'audio':
